@@ -108,7 +108,7 @@ function resetGame() {
 }
 
 document.addEventListener('keydown', e => {
-  if (e.code === 'KeyR' && gameState.gameOver && !e.repeat) {
+  if (e.code === 'KeyR' && !e.repeat) {
     resetGame();
   }
 });
