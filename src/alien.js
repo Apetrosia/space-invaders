@@ -6,6 +6,14 @@ export default class Alien {
     this._spriteB = spriteB;
   }
 
+  get width() {
+    return this._spriteA.w;
+  }
+
+  get height() {
+    return this._spriteA.h;
+  }
+
   draw(ctx, time) {
     let sp = (Math.ceil(time / 1000) % 2 === 0) ? this._spriteA : this._spriteB;
 

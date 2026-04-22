@@ -1,14 +1,25 @@
 {
   "name": "space-invaders",
   "version": "1.0.0",
-  "description": "",
+  "description": "```bash\r npm install -g bun\r ```\r or\r ```bash\r powershell -c \"irm bun.sh/install.ps1|iex\"\r ```",
   "main": "index.js",
-  "scripts": {
-    "start": "bun index.html --outdir=build --sourcemap=linked",
-    "build": "bun build index.html --outdir=docs"
+  "directories": {
+    "doc": "docs"
   },
+  "scripts": {
+    "start": "npx serve .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Apetrosia/space-invaders.git"
+  },
+  "keywords": [],
+  "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "jest": "^29.0.3"
-  }
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Apetrosia/space-invaders/issues"
+  },
+  "homepage": "https://github.com/Apetrosia/space-invaders#readme"
 }

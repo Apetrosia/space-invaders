@@ -3,11 +3,11 @@ import {
   init,
   update,
   draw
-} from './game'
+} from './game.js'
 
 const canvas = document.getElementById("cnvs");
 canvas.width = 600;
-canvas.height = window.innerHeight;
+canvas.height = Math.max(560, Math.min(760, window.innerHeight - 40));
 
 const tickLength = 15; //ms
 let lastTick;
