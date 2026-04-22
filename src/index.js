@@ -1,13 +1,21 @@
 import {
   preload,
   init,
+  resize,
   update,
   draw
 } from './game.js'
 
 const canvas = document.getElementById("cnvs");
-canvas.width = 600;
-canvas.height = Math.max(560, Math.min(760, window.innerHeight - 40));
+
+function fitCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    resize(canvas);
+}
+
+window.addEventListener('resize', fitCanvas);
+fitCanvas();
 
 const tickLength = 15; //ms
 let lastTick;
@@ -43,6 +51,7 @@ function onPreloadComplete() {
   lastRender = lastTick;
   stopCycle = null;
   init(canvas);
+  fitCanvas();
   run();
 }
 

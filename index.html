@@ -5,13 +5,13 @@
 	<meta charset="UTF-8" />
   <style>
     * { margin:0; padding:0; }
-    html, body { width:100%; height:100%; background: black; }
-    canvas { widht: 600px; display:block; background: black; margin: 0 auto; }
+    html, body { width:100%; height:100%; background: black; overflow:hidden; }
+    canvas { width:100vw; height:100vh; display:block; background: black; }
   </style>
 </head>
 
 <body>
-	<canvas width="100%" height="100%" id='cnvs'></canvas>
+	<canvas id='cnvs'></canvas>
 	<script src="./src/index.js" type="module"></script>
 </body>
 </html>

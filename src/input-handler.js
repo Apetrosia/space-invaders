@@ -35,4 +35,9 @@ export default class InputHandler {
         }
         return false;
     }
+
+    reset() {
+        this.down = {};
+        this.pressed = {};
+    }
 }

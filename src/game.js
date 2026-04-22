@@ -8,6 +8,16 @@ const assetPath = './assets/invaders.png';
 
 let assets;
 const CANVAS_WIDTH = 600;
+const SPRITE_SCALE = 1.45;
+const BULLET_SCALE = 1.35;
+const HUD_X = 12;
+const HUD_Y = 18;
+const HUD_LINE = 22;
+const FORMATION_START_X = 26;
+const FORMATION_START_Y = 30;
+const FORMATION_STEP_X = 34;
+const FORMATION_STEP_Y = 30;
+const PLAYER_BOTTOM_MARGIN = 6;
 const PLAYER_BULLET_SPEED = -8;
 const ENEMY_BULLET_BASE_SPEED = 3.5;
 const ENEMY_BULLET_ENRAGED_SPEED = 5.5;
@@ -44,6 +54,64 @@ const gameState = {
   canvasWidth: CANVAS_WIDTH,
 };
 const inputHandler = new InputHandler();
+
+function createAliens() {
+  const alienTypes = [1, 0, 1, 2, 0, 2];
+  const aliens = [];
+
+	for (let i = 0, len = alienTypes.length; i < len; i++) {
+		for (let j = 0; j < 10; j++) {
+      const alienType = alienTypes[i];
+
+      let alienX = FORMATION_START_X + j * FORMATION_STEP_X;
+      let alienY = FORMATION_START_Y + i * FORMATION_STEP_Y;
+
+      if (alienType === 1) {
+        alienX += 3; // (kostyl) aliens of this type is a bit thinner
+      }
+
+			const alien = new Alien(alienX, alienY, sprites.aliens[alienType]);
+      alien.scale = SPRITE_SCALE;
+      alien.row = i;
+      alien.col = j;
+			aliens.push(alien);
+		}
+	}
+
+  return aliens;
+}
+
+function resetGame() {
+  gameState.bullets = [];
+  gameState.aliens = createAliens();
+  gameState.cannonLives = STARTING_LIVES;
+  gameState.lastPlayerShotAt = 0;
+  gameState.lastEnemyShotAt = 0;
+  gameState.alienDirection = 1;
+  gameState.alienSpeed = 0.35;
+  gameState.alienDropStep = 18;
+  gameState.enragedUntil = 0;
+  gameState.killStreak = 0;
+  gameState.lastKillAt = 0;
+  gameState.gameOver = false;
+  gameState.victory = false;
+  gameState.aggroByColumn = {};
+  gameState.killedRows = {};
+
+  if (gameState.cannon) {
+    gameState.cannon.x = Math.max(0, (gameState.canvasWidth - gameState.cannon.width) / 2);
+    gameState.cannon.y = gameState.canvasHeight - gameState.cannon.height - PLAYER_BOTTOM_MARGIN;
+    gameState.cannon.invulnerableUntil = 0;
+  }
+
+  inputHandler.reset();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.code === 'KeyR' && gameState.gameOver && !e.repeat) {
+    resetGame();
+  }
+});
 
 function rectIntersects(ax, ay, aw, ah, bx, by, bw, bh) {
   return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
@@ -96,7 +164,7 @@ function registerKill(time, alienRow) {
 }
 
 function clampCannonToCanvas() {
-  const cannonWidth = gameState.cannon._sprite.w;
+  const cannonWidth = gameState.cannon.width;
   gameState.cannon.x = Math.max(0, Math.min(gameState.canvasWidth - cannonWidth, gameState.cannon.x));
 }
 
@@ -182,7 +250,7 @@ function enemyShoot(time) {
     return;
   }
 
-  const cannonCenterX = gameState.cannon.x + gameState.cannon._sprite.w / 2;
+  const cannonCenterX = gameState.cannon.x + gameState.cannon.width / 2;
   const shooter = chooseShooterColumn(cannonCenterX);
   if (!shooter) {
     return;
@@ -204,8 +272,8 @@ function enemyShoot(time) {
       shooterCenterX,
       spawnY,
       bulletSpeed,
-      3,
-      8,
+    4,
+    12,
       isEnraged(time) ? '#ff6363' : '#9fd0ff',
       'enemy',
       directionX
@@ -257,15 +325,15 @@ function handleBulletCollisions(time) {
       const cannonRect = {
         x: gameState.cannon.x,
         y: gameState.cannon.y,
-        w: gameState.cannon._sprite.w,
-        h: gameState.cannon._sprite.h,
+        w: gameState.cannon.width,
+        h: gameState.cannon.height,
       };
 
       if (sweptBulletIntersectsRect(bullet, cannonRect)) {
         if (time >= gameState.cannon.invulnerableUntil) {
           gameState.cannonLives -= 1;
           gameState.cannon.invulnerableUntil = time + 1300;
-          gameState.cannon.x = (gameState.canvasWidth - gameState.cannon._sprite.w) / 2;
+          gameState.cannon.x = (gameState.canvasWidth - gameState.cannon.width) / 2;
         }
         consumed = true;
       }
@@ -287,13 +355,11 @@ function checkWinLoseState(stopGame) {
   if (gameState.aliens.length === 0 && !gameState.victory) {
     gameState.victory = true;
     gameState.gameOver = true;
-    stopGame();
     return;
   }
 
   if (gameState.cannonLives <= 0 && !gameState.gameOver) {
     gameState.gameOver = true;
-    stopGame();
     return;
   }
 
@@ -301,7 +367,6 @@ function checkWinLoseState(stopGame) {
     const alien = gameState.aliens[i];
     if (alien.y + alien.height >= gameState.cannon.y) {
       gameState.gameOver = true;
-      stopGame();
       return;
     }
   }
@@ -324,37 +389,27 @@ export function preload(onPreloadComplete) {
 }
 
 export function init(canvas) {
-  const alienTypes = [1, 0, 1, 2, 0, 2];
-	const formationStartX = 40;
-	const formationStartY = 24;
-	const formationStepX = 26;
-	const formationStepY = 24;
-	for (var i = 0, len = alienTypes.length; i < len; i++) {
-		for (var j = 0; j < 10; j++) {
-      const alienType = alienTypes[i];
-
-      let alienX = formationStartX + j * formationStepX;
-      let alienY = formationStartY + i * formationStepY;
-
-      if (alienType === 1) {
-        alienX += 3; // (kostyl) aliens of this type is a bit thinner
-      }
-
-			const alien = new Alien(alienX, alienY, sprites.aliens[alienType]);
-      alien.row = i;
-      alien.col = j;
-			gameState.aliens.push(alien);
-		}
-	}
-
-  gameState.cannon = new Cannon(
-    100, canvas.height - 72,
-    sprites.cannon
-  );
-
-  gameState.cannon.invulnerableUntil = 0;
   gameState.canvasHeight = canvas.height;
   gameState.canvasWidth = canvas.width;
+
+  gameState.cannon = new Cannon(
+    Math.max(0, (canvas.width - sprites.cannon.w * SPRITE_SCALE) / 2),
+    canvas.height - (sprites.cannon.h * SPRITE_SCALE) - PLAYER_BOTTOM_MARGIN,
+    sprites.cannon,
+    SPRITE_SCALE
+  );
+
+  resetGame();
+}
+
+export function resize(canvas) {
+  gameState.canvasWidth = canvas.width;
+  gameState.canvasHeight = canvas.height;
+
+  if (gameState.cannon) {
+    gameState.cannon.y = canvas.height - gameState.cannon.height - PLAYER_BOTTOM_MARGIN;
+    clampCannonToCanvas();
+  }
 }
 
 export function update(time, stopGame) {
@@ -373,9 +428,9 @@ export function update(time, stopGame) {
   clampCannonToCanvas();
 
   if (inputHandler.isPressed('Space') && time - gameState.lastPlayerShotAt >= PLAYER_SHOT_COOLDOWN) {
-    const bulletX = gameState.cannon.x + 10;
+    const bulletX = gameState.cannon.x + gameState.cannon.width * 0.42;
     const bulletY = gameState.cannon.y;
-		gameState.bullets.push(new Bullet(bulletX, bulletY, PLAYER_BULLET_SPEED, 2, 8, '#fff', 'player'));
+		gameState.bullets.push(new Bullet(bulletX, bulletY, PLAYER_BULLET_SPEED, 4, 12, '#fff', 'player'));
     gameState.lastPlayerShotAt = time;
 	}
 
@@ -400,18 +455,23 @@ export function draw(canvas, time) {
   gameState.bullets.forEach(b => b.draw(ctx));
 
   ctx.fillStyle = '#fff';
-  ctx.font = '16px monospace';
-  ctx.fillText(`Lives: ${gameState.cannonLives}`, 16, 24);
-  ctx.fillText(`Aliens: ${gameState.aliens.length}`, 16, 44);
+  ctx.font = '18px monospace';
+  ctx.fillText(`Lives: ${gameState.cannonLives}`, HUD_X, HUD_Y);
+  ctx.fillText(`Aliens: ${gameState.aliens.length}`, HUD_X, HUD_Y + HUD_LINE);
 
   if (isEnraged(time)) {
     ctx.fillStyle = '#ff8b8b';
-    ctx.fillText('ENRAGED', 16, 64);
+    ctx.fillText('ENRAGED', HUD_X, HUD_Y + HUD_LINE * 2);
   }
 
   if (gameState.gameOver) {
+    const message = gameState.victory ? 'YOU WIN' : 'GAME OVER';
     ctx.fillStyle = gameState.victory ? '#7dff9f' : '#ff7d7d';
     ctx.font = 'bold 32px monospace';
-    ctx.fillText(gameState.victory ? 'YOU WIN' : 'GAME OVER', gameState.canvasWidth / 2 - 90, canvas.height / 2);
+    ctx.fillText(message, gameState.canvasWidth / 2 - 90, canvas.height / 2);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '16px monospace';
+    ctx.fillText('Press R to restart', gameState.canvasWidth / 2 - 92, canvas.height / 2 + 28);
   }
 }
