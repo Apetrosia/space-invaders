@@ -19,10 +19,10 @@ const FORMATION_STEP_X = 34;
 const FORMATION_STEP_Y = 30;
 const PLAYER_BOTTOM_MARGIN = 6;
 const PLAYER_BULLET_SPEED = -8;
-const ENEMY_BULLET_BASE_SPEED = 3.5;
-const ENEMY_BULLET_ENRAGED_SPEED = 5.5;
+const ENEMY_BULLET_BASE_SPEED = 5.5;
+const ENEMY_BULLET_ENRAGED_SPEED = 8.5;
 const ENEMY_SHOT_COOLDOWN = 1200;
-const ENEMY_SHOT_COOLDOWN_ENRAGED = 700;
+const ENEMY_SHOT_COOLDOWN_ENRAGED = 400;
 const PLAYER_SHOT_COOLDOWN = 240;
 const COMBO_WINDOW_MS = 1400;
 const ENRAGED_DURATION_MS = 5000;
@@ -88,7 +88,7 @@ function resetGame() {
   gameState.lastPlayerShotAt = 0;
   gameState.lastEnemyShotAt = 0;
   gameState.alienDirection = 1;
-  gameState.alienSpeed = 0.35;
+  gameState.alienSpeed = 1.2;
   gameState.alienDropStep = 18;
   gameState.enragedUntil = 0;
   gameState.killStreak = 0;
@@ -152,7 +152,7 @@ function registerKill(time, alienRow) {
 
   gameState.lastKillAt = time;
 
-  if (gameState.killStreak >= 3) {
+  if (gameState.killStreak >= 5) {
     activateEnragedMode(time);
   }
 
