@@ -67,7 +67,7 @@ function createAliens() {
       let alienY = FORMATION_START_Y + i * FORMATION_STEP_Y;
 
       if (alienType === 1) {
-        alienX += 3; // (kostyl) aliens of this type is a bit thinner
+        alienX += 3;
       }
 
 			const alien = new Alien(alienX, alienY, sprites.aliens[alienType]);
