@@ -417,11 +417,11 @@ export function update(time, stopGame) {
     return;
   }
 
-	if (inputHandler.isDown('ArrowLeft')) {
-		gameState.cannon.x -= 4;
-	}
+	if (inputHandler.isDown('ArrowLeft') || inputHandler.isDown('KeyA')) {
+    gameState.cannon.x -= 4;
+  }
 
-	if (inputHandler.isDown('ArrowRight')) {
+	if (inputHandler.isDown('ArrowRight') || inputHandler.isDown('KeyD')) {
 		gameState.cannon.x += 4;
 	}
 
